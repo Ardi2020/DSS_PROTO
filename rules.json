@@ -1,0 +1,67 @@
+{
+"version": "1.0.0",
+"updated_at": "2025-10-19",
+"time_zone": "Asia/Jakarta",
+"schema": "dss-smile/rules-schema/1.0",
+"operators": ["all", "any", ">", ">=", "<", "<=", "==", "contains"],
+"default": {
+"windowDays": 7,
+"maxEvidence": 5
+},
+"rules": [
+{
+"id": "BKO_HIGH_7D",
+"name": "Pelanggaran BKO ≥3 dalam 7 hari",
+"description": "Jika jumlah pelanggaran BKO dalam 7 hari terakhir mencapai atau melebihi 3.",
+"enabled": true,
+"severity": "HIGH",
+"datasets": ["bko_trend", "tlhm_exceed"],
+"when": {
+"all": [
+{ "source": "bko_trend", "filter": { "sinceDays": 7, "exceed": true }, "aggregate": { "count": { "gte": 3 } } }
+]
+},
+"recommendation": "Evaluasi TLHI segera (≤3 hari) dan lakukan pemeriksaan parameter terkait.",
+"evidence": {
+"template": "{{count}} pelanggaran BKO dalam {{windowDays}} hari terakhir. Contoh: {{samples}}",
+"fields": ["instalasi_id", "parameter", "nilai", "bko", "tanggal"]
+}
+},
+{
+"id": "FINDINGS_CAT1_REPEAT",
+"name": "Temuan Kategori 1 berulang pada pasal yang sama",
+"description": "Jika temuan kategori 1 pada pasal yang sama muncul setidaknya 2 kali dalam 90 hari.",
+"enabled": true,
+"severity": "HIGH",
+"datasets": ["temuan"],
+"when": {
+"all": [
+{ "source": "temuan", "filter": { "sinceDays": 90, "kategori": 1 }, "groupBy": ["pasal"], "aggregate": { "count": { "gte": 2 } } }
+]
+},
+"recommendation": "Jadwalkan inspeksi prioritas dan terbitkan surat peringatan.",
+"evidence": {
+"template": "Temuan K1 berulang pada {{group.pasal}} sebanyak {{count}} kali (90 hari). Contoh: {{samples}}",
+"fields": ["instalasi_id", "pasal", "tanggal", "uraian"]
+}
+},
+{
+"id": "TLHI_OVERDUE",
+"name": "TLHI melewati tenggat",
+"description": "Ada TLHI yang due_date sudah lewat dan status belum closed.",
+"enabled": true,
+"severity": "HIGH",
+"datasets": ["tlhi"],
+"when": {
+"any": [
+{ "source": "tlhi", "filter": { "dueBefore": "now", "statusNotIn": ["closed", "done"] } }
+]
+},
+"recommendation": "Tindak lanjuti segera; tetapkan PIC dan target penyelesaian ≤3 hari.",
+"evidence": {
+"template": "TLHI {{item.tlhi_id}} jatuh tempo {{item.due_date}} dengan status {{item.status}}.",
+"fields": ["tlhi_id", "due_date", "status", "instalasi_id", "judul"]
+}
+}
+]
+}

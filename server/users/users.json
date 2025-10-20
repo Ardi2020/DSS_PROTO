@@ -1,0 +1,14 @@
+{
+  "users": [
+    {
+      "id": "u_admin",
+      "username": "admin",
+      "passwordHash": "$2a$10$dClem7xnrXXbJ.XL5H3Qd.uFBSSxPerxcc6JGJPHKmX0Cvl/3WKJ.",
+      "role": "admin",
+      "permissions": [
+        "*"
+      ],
+      "active": true
+    }
+  ]
+}

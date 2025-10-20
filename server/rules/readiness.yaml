@@ -1,0 +1,38 @@
+meta:
+  id: readiness_v1
+  version: 1.0.0
+  description: "Contoh aturan awal untuk level kesiapan"
+
+aggregates:
+  # Field agregat yang nanti diisi dari API (placeholder)
+  api_uptime_30d: 0.0
+  staff_ai_training_rate: 0.0
+  tlhi_overdue_count: 0
+  inspections_last_12mo: 0
+
+rules:
+  - id: tech_infra_min
+    when: "api_uptime_30d >= 0.95 && staff_ai_training_rate >= 0.3"
+    then:
+      set:
+        readiness.tech_infra: "MIN_OK"
+      explain: "Uptime ≥95% dan ≥30% staf mengikuti pelatihan AI."
+
+  - id: tlhi_overdue_flag
+    when: "tlhi_overdue_count > 0"
+    then:
+      addRisk:
+        code: "TLHI_OVERDUE"
+        severity: "HIGH"
+      explain: "Ada TLHI yang melewati jatuh tempo."
+
+scoring:
+  formula: "0.4*infra + 0.4*process - 0.2*risk"
+  bins:
+    - { min: -999, max: 0.49, label: "LOW" }
+    - { min: 0.5, max: 0.74, label: "MEDIUM" }
+    - { min: 0.75, max: 0.89, label: "HIGH" }
+    - { min: 0.9, max: 1.0, label: "EXCELLENT" }
+
+output:
+  fields: ["readiness_level","recommendations","evidence","rules_fired"]
